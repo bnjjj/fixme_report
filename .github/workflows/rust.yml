@@ -13,10 +13,6 @@ jobs:
       run: cargo build --release
     - name: Run tests
       run: cargo test --verbose
-  
-  release:
-    runs-on: ubuntu-latest
-    steps:
     - name: Automatic Releases
       uses: marvinpinto/action-automatic-releases@v0.2.2
       with:
@@ -32,3 +28,4 @@ jobs:
         title: test # optional
         # Assets to upload to the release
         files: target/release/fixme_report # optional
+
