@@ -1,0 +1,131 @@
+diff --git a/engine/hatchery/kubernetes/kubernetes.go b/engine/hatchery/kubernetes/kubernetes.go
+index e5b6485006..6cc90163d0 100644
+--- a/engine/hatchery/kubernetes/kubernetes.go
++++ b/engine/hatchery/kubernetes/kubernetes.go
+@@ -228,6 +228,16 @@ func (h *HatcheryKubernetes) WorkerModelsEnabled() ([]sdk.Model, error) {
+ // CanSpawn return wether or not hatchery can spawn model.
+ // requirements are not supported
+ func (h *HatcheryKubernetes) CanSpawn(ctx context.Context, model *sdk.Model, jobID int64, requirements []sdk.Requirement) bool {
++	// Service and Hostname requirement are not supported
++	for _, r := range requirements {
++		if r.Type == sdk.ServiceRequirement {
++			log.Debug("CanSpawn> Job %d has a service requirement. Kubernetes can't spawn a worker for this job", jobID)
++			return false
++		} else if r.Type == sdk.HostnameRequirement {
++			log.Debug("CanSpawn> Job %d has a hostname requirement. Kubernetes can't spawn a worker for this job", jobID)
++			return false
++		}
++	}
+ 	return true
+ }
+ 
+diff --git a/engine/hatchery/local/local.go b/engine/hatchery/local/local.go
+index c31f59b544..a09a731c4c 100644
+--- a/engine/hatchery/local/local.go
++++ b/engine/hatchery/local/local.go
+@@ -373,6 +373,12 @@ func (h *HatcheryLocal) checkRequirement(r sdk.Requirement) (bool, error) {
+ 		}
+ 		conn.Close()
+ 		return true, nil
++	case sdk.HostnameRequirement:
++		h, err := os.Hostname()
++		if err != nil {
++			return false, err
++		}
++		return h == r.Value, nil
+ 	default:
+ 		log.Debug("checkRequirement> %v don't work on this hatchery", r.Type)
+ 		return false, nil
+diff --git a/engine/hatchery/marathon/marathon.go b/engine/hatchery/marathon/marathon.go
+index d46ab42d04..39d087f8ed 100644
+--- a/engine/hatchery/marathon/marathon.go
++++ b/engine/hatchery/marathon/marathon.go
+@@ -166,11 +166,14 @@ func (h *HatcheryMarathon) WorkerModelsEnabled() ([]sdk.Model, error) {
+ // CanSpawn return wether or not hatchery can spawn model
+ // requirements services are not supported
+ func (h *HatcheryMarathon) CanSpawn(ctx context.Context, model *sdk.Model, jobID int64, requirements []sdk.Requirement) bool {
+-	//Service requirement are not supported
++	// Service and Hostname requirement are not supported
+ 	for _, r := range requirements {
+ 		if r.Type == sdk.ServiceRequirement {
+ 			log.Debug("CanSpawn> Job %d has a service requirement. Marathon can't spawn a worker for this job", jobID)
+ 			return false
++		} else if r.Type == sdk.HostnameRequirement {
++			log.Debug("CanSpawn> Job %d has a hostname requirement. Marathon can't spawn a worker for this job", jobID)
++			return false
+ 		}
+ 	}
+ 
+diff --git a/engine/hatchery/openstack/openstack.go b/engine/hatchery/openstack/openstack.go
+index 463d14091d..167af86cfe 100644
+--- a/engine/hatchery/openstack/openstack.go
++++ b/engine/hatchery/openstack/openstack.go
+@@ -166,7 +166,7 @@ func (h *HatcheryOpenstack) WorkerModelsEnabled() ([]sdk.Model, error) {
+ // requirements are not supported
+ func (h *HatcheryOpenstack) CanSpawn(ctx context.Context, model *sdk.Model, jobID int64, requirements []sdk.Requirement) bool {
+ 	for _, r := range requirements {
+-		if r.Type == sdk.ServiceRequirement || r.Type == sdk.MemoryRequirement {
++		if r.Type == sdk.ServiceRequirement || r.Type == sdk.MemoryRequirement || r.Type == sdk.HostnameRequirement {
+ 			return false
+ 		}
+ 	}
+diff --git a/engine/hatchery/swarm/swarm.go b/engine/hatchery/swarm/swarm.go
+index 9dedddc734..f94b1cfb37 100644
+--- a/engine/hatchery/swarm/swarm.go
++++ b/engine/hatchery/swarm/swarm.go
+@@ -454,6 +454,13 @@ const (
+ // CanSpawn checks if the model can be spawned by this hatchery
+ // it checks on every docker engine is one of the docker has availability
+ func (h *HatcherySwarm) CanSpawn(ctx context.Context, model *sdk.Model, jobID int64, requirements []sdk.Requirement) bool {
++	// Hostname requirement are not supported
++	for _, r := range requirements {
++		if r.Type == sdk.HostnameRequirement {
++			log.Debug("CanSpawn> Job %d has a hostname requirement. Swarm can't spawn a worker for this job", jobID)
++			return false
++		}
++	}
+ 	for dockerName, dockerClient := range h.dockerClients {
+ 		//List all containers to check if we can spawn a new one
+ 		cs, errList := h.getContainers(dockerClient, types.ContainerListOptions{All: true})
+@@ -633,6 +640,7 @@ func (h *HatcherySwarm) listAwolWorkers(dockerClientName string, containers []ty
+ 
+ 		//If there isn't any worker registered on the API. Kill the container
+ 		if len(apiworkers) == 0 {
++			log.Debug("hatchery> swarm> listAwolWorkers> no apiworkers returned by api container %s will be deleted", c.Names[0])
+ 			oldContainers = append(oldContainers, c)
+ 			continue
+ 		}
+@@ -652,6 +660,7 @@ func (h *HatcherySwarm) listAwolWorkers(dockerClientName string, containers []ty
+ 		}
+ 		//If the container doesn't match any worker : Kill it.
+ 		if !found {
++			// TODO: clean these containers
+ 			oldContainers = append(oldContainers, c)
+ 		}
+ 	}
+diff --git a/engine/hatchery/vsphere/vsphere.go b/engine/hatchery/vsphere/vsphere.go
+index 9fd214d5a4..474a0e677d 100644
+--- a/engine/hatchery/vsphere/vsphere.go
++++ b/engine/hatchery/vsphere/vsphere.go
+@@ -118,7 +118,7 @@ func (h *HatcheryVSphere) CheckConfiguration(cfg interface{}) error {
+ // requirements are not supported
+ func (h *HatcheryVSphere) CanSpawn(ctx context.Context, model *sdk.Model, jobID int64, requirements []sdk.Requirement) bool {
+ 	for _, r := range requirements {
+-		if r.Type == sdk.ServiceRequirement || r.Type == sdk.MemoryRequirement {
++		if r.Type == sdk.ServiceRequirement || r.Type == sdk.MemoryRequirement || r.Type == sdk.HostnameRequirement {
+ 			return false
+ 		}
+ 	}
+diff --git a/ui/src/app/app.component.html b/ui/src/app/app.component.html
+index b0f58b5b41..8c2df9bb33 100644
+--- a/ui/src/app/app.component.html
++++ b/ui/src/app/app.component.html
+@@ -3,7 +3,7 @@
+         <div id="navbar" *ngIf="isConnected && !hideNavBar" [class.connected]="isConnected">
+             <app-navbar></app-navbar>
+         </div>
+-        <div class="maintenance banner pointing" [class.mt50]="isConnected" *ngIf="maintenance && (!isConnected || user?.ring == 'ADMIN')">
++        <div class="maintenance banner" [class.mt50]="isConnected" *ngIf="maintenance && (!isConnected || user?.ring == 'ADMIN')">
+             <span>{{ 'maintenance_title' | translate }}</span>
+             <img src="assets/images/maintenance.svg"/>
+         </div>
