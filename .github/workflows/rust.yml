@@ -24,7 +24,7 @@ jobs:
     - name: Echo
       run: echo "current version ${{ env.current_version }}"
     - name: Automatic Releases
-      if: env.last_tag != env.current_version || env.last_tag == ""
+      if: env.last_tag != env.current_version || env.last_tag == ''
       uses: marvinpinto/action-automatic-releases@v0.2.2
       with:
         # GitHub secret token
