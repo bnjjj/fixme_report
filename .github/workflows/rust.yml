@@ -27,7 +27,6 @@ jobs:
     - name: Echo
       run: echo "current version ${{ env.current_version }}"
     - name: Rename file
-      if: env.last_tag != env.current_version || env.last_tag == ''
       run: mv target/release/fixme_report target/release/fixme_report_${{ runner.os }}
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
