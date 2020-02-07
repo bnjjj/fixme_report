@@ -34,7 +34,7 @@ jobs:
         # Artifact name
         name: fixme_report_${{ runner.os }}
         # Directory containing files to upload
-        path: target/release
+        path: target/release/fixme_report_${{ runner.os }}
 
 
   release:
