@@ -1,6 +1,9 @@
 name: Rust
 
-on: [push]
+on:
+  push:
+    branches: 
+      - master
 
 jobs:
   build:
@@ -13,7 +16,14 @@ jobs:
       run: cargo build --release
     - name: Run tests
       run: cargo test --verbose
+    - name: Get last tag
+      continue-on-error: true
+      run: echo "::set-env name=last_tag::fixme_report $(git describe --abbrev=0)"
+    - name: Get current version
+      run: echo "::set-env name=current_version::$(./target/release/fixme_report --version)"
+      
     - name: Automatic Releases
+      if: env.last_tag <> env.current_version
       uses: marvinpinto/action-automatic-releases@v0.2.2
       with:
         # GitHub secret token
