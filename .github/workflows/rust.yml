@@ -23,7 +23,7 @@ jobs:
       run: echo "::set-env name=current_version::$(./target/release/fixme_report --version)"
       
     - name: Automatic Releases
-      if: env.last_tag <> env.current_version
+      if: env.last_tag != env.current_version
       uses: marvinpinto/action-automatic-releases@v0.2.2
       with:
         # GitHub secret token
