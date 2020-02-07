@@ -55,7 +55,7 @@ jobs:
       continue-on-error: true
       run: echo "::set-env name=last_tag::$(git describe --abbrev=0)"
     - name: Get current version
-      run: echo "::set-env name=current_version::$(.fixme_report_Linux --version | cut -d' ' -f 2)"
+      run: echo "::set-env name=current_version::$(./fixme_report_Linux --version | cut -d' ' -f 2)"
     - name: Echo
       run: echo "current version ${{ env.current_version }}"
     - name: Automatic Releases
