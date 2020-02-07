@@ -15,7 +15,7 @@ jobs:
     - name: Build
       run: cargo build --release
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test
     - name: Get last tag
       continue-on-error: true
       run: echo "::set-env name=last_tag::$(git describe --abbrev=0)"
