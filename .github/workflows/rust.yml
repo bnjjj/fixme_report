@@ -27,6 +27,7 @@ jobs:
     - name: Echo
       run: echo "current version ${{ env.current_version }}"
     - name: Rename file
+      if: env.last_tag != env.current_version || env.last_tag == ''
       run: mv target/release/fixme_report target/release/fixme_report_${{ runner.os }}
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
@@ -51,6 +52,13 @@ jobs:
       with:
         # Artifact name
         name: fixme_report_Linux
+    - name: Get last tag
+      continue-on-error: true
+      run: echo "::set-env name=last_tag::$(git describe --abbrev=0)"
+    - name: Get current version
+      run: echo "::set-env name=current_version::$(.fixme_report_Linux --version | cut -d' ' -f 2)"
+    - name: Echo
+      run: echo "current version ${{ env.current_version }}"
     - name: Automatic Releases
       if: env.last_tag != env.current_version || env.last_tag == ''
       uses: marvinpinto/action-automatic-releases@v0.2.2
