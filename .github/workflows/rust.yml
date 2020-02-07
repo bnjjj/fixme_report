@@ -48,12 +48,16 @@ jobs:
         # Artifact name
         name: fixme_report_macOS
         path: .
+    - name: Change permissions macOS
+      run: chmod +x fixme_report_macOS
     - name: Download artifact linux
       uses: actions/download-artifact@v1.0.0
       with:
         # Artifact name
         name: fixme_report_Linux
         path: .
+    - name: Change permissions Linux
+      run: chmod +x fixme_report_Linux
     - name: Get last tag
       continue-on-error: true
       run: echo "::set-env name=last_tag::$(git describe --abbrev=0)"
