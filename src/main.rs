@@ -13,6 +13,7 @@ use fixme_report::parser;
 
 fn main() {
     let matches = App::new("fixme_report")
+        .version(env!("CARGO_PKG_VERSION"))
         .about("Command-line to create issue from your codebase with TODO and FIXME annotation")
         .arg(
             Arg::with_name("dry-run")
