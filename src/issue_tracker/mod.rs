@@ -30,6 +30,7 @@ pub struct Issue {
     pub title: String,
     pub details: String,
     pub status: String,
+    pub assignee: Option<String>,
 }
 
 impl Issue {
@@ -39,7 +40,13 @@ impl Issue {
             title,
             details,
             status: String::from("open"),
+            assignee: None,
         }
+    }
+
+    pub fn with_assignee(mut self, assignee: String) -> Self {
+        self.assignee = Some(assignee);
+        self
     }
 
     pub fn from(annotation: Annotation, templates: &Templates) -> Result<Issue> {
@@ -63,7 +70,11 @@ impl Issue {
                     )
                 };
 
-                Issue::new(title, details)
+                if let Some(assignee) = comment.assignee {
+                    Issue::new(title, details).with_assignee(assignee)
+                } else {
+                    Issue::new(title, details)
+                }
             }
             Annotation::Todo(comment) => {
                 let title = if comment.details.len() > 60 {
@@ -84,7 +95,11 @@ impl Issue {
                     )
                 };
 
-                Issue::new(title, details)
+                if let Some(assignee) = comment.assignee {
+                    Issue::new(title, details).with_assignee(assignee)
+                } else {
+                    Issue::new(title, details)
+                }
             }
         };
 

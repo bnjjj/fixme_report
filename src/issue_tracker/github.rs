@@ -18,6 +18,7 @@ pub struct GithubClient {
 struct IssueParameters {
     title: String,
     body: String,
+    assignees: Vec<String>,
 }
 
 impl GithubClient {
@@ -40,14 +41,30 @@ impl IssueTrackerClient for GithubClient {
         let (_, status_code, json_resp) = task::spawn_blocking(move || {
             let issues_endpoint = format!("repos/{}/issues", repository_slug);
             let client = Github::new(token)?;
-            let issue_params = IssueParameters {
+            let mut assignees = vec![];
+            if let Some(assignee) = issue.assignee {
+                assignees.push(assignee);
+            }
+
+            let mut issue_params = IssueParameters {
                 title: issue.title,
                 body: issue.details,
+                assignees,
             };
-            client
-                .post(issue_params)
+            let resp = client
+                .post(&issue_params)
                 .custom_endpoint(&issues_endpoint)
-                .execute::<Value>()
+                .execute::<Value>();
+
+            if resp.is_err() {
+                issue_params.assignees = vec![];
+                client
+                    .post(&issue_params)
+                    .custom_endpoint(&issues_endpoint)
+                    .execute::<Value>()
+            } else {
+                resp
+            }
         })
         .await?;
 
@@ -62,6 +79,17 @@ impl IssueTrackerClient for GithubClient {
             return Ok(Issue::default());
         }
         let json_resp = json_resp.unwrap_or_default();
+        let mut assignee = None;
+        if let Some(assignees) = json_resp["assignees"].as_array() {
+            if !assignees.is_empty() {
+                assignee = Some(
+                    assignees.get(0).unwrap()["login"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .to_owned(),
+                );
+            }
+        }
 
         Ok(Issue {
             title: json_resp["title"].as_str().unwrap_or_default().to_owned(),
@@ -71,6 +99,7 @@ impl IssueTrackerClient for GithubClient {
                 "{}",
                 json_resp["number"].as_i64().unwrap_or_default()
             )),
+            assignee,
         })
     }
 

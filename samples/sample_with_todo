@@ -99,7 +99,7 @@ index 9dedddc734..f94b1cfb37 100644
  		}
  		//If the container doesn't match any worker : Kill it.
  		if !found {
-+			// TODO: clean these containers
++			// TODO (@bnjjj): clean these containers
  			oldContainers = append(oldContainers, c)
  		}
  	}

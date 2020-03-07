@@ -1,6 +1,6 @@
 [package]
 name = "fixme_report"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Benjamin Coenen <5719034+bnjjj@users.noreply.github.com>"]
 edition = "2018"
 license-file = "LICENSE"

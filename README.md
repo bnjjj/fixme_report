@@ -1,6 +1,6 @@
 # FIXME report
 
-Here is a simple tool to automate issues creation directly from `// TODO` and `// FIXME` comments in your code. Too often you write these kinds of comments but are never deleted or even taking in account for next milestone. For now it only support GitHub issue creation but check the [roadmap](#roadmap) for next supports.
+Here is a simple tool to automate issues creation directly from `// TODO` and `// FIXME` comments in your code. Too often you write these kinds of comments but are never deleted or even taking in account for next milestone. Note you can also assign your issues to an assignee by indicating a comment with this syntax `// TODO (@bnjjj): clean this function` For now it only support GitHub issue creation but check the [roadmap](#roadmap) for next supports.
 
 ## Configuration
 
@@ -57,8 +57,6 @@ Here is an example of created issue with [this example of git diff](samples/samp
 
 ## Roadmap
 
-+ Add releases and automation
-+ Add option to assign someone via the todo's structure (like for eslint)
 + Add support of Bitbucket Cloud
 + Add support of Bitbucket Server
 + Add support of Gitlab

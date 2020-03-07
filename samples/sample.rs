@@ -1,4 +1,4 @@
-// TODO: to delete, definitively because it's a non-sense
+// TODO (@bnjjj): to delete, definitively because it's a non-sense
 fn hello_world() {
     println!("Helloworld");
 }

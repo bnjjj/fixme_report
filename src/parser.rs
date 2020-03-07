@@ -11,8 +11,10 @@ use regex::Regex;
 use unidiff::PatchSet;
 
 lazy_static! {
-    static ref RX_COMMENT: Regex =
-        Regex::new(r"^\s*//\s{0,1}(?P<type>TODO|FIXME):\s*(?P<details>.+)$").unwrap();
+    static ref RX_COMMENT: Regex = Regex::new(
+        r"^\s*//\s{0,1}(?P<type>TODO|FIXME)\s*(?:\(@?(?P<author>.*)\))?:\s*(?P<details>.+)$"
+    )
+    .unwrap();
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -20,6 +22,7 @@ pub struct Comment {
     pub line: u64,
     pub file: String,
     pub details: String,
+    pub assignee: Option<String>,
 }
 
 impl Comment {
@@ -53,8 +56,12 @@ where
     let input_stream = BufReader::new(input_stream);
 
     for (line_nb, line) in input_stream.lines().map(|l| l.unwrap()).enumerate() {
-        let (comment_type, details) = match RX_COMMENT.captures(&line) {
-            Some(matches) => (matches["type"].to_string(), matches["details"].to_string()),
+        let (comment_type, details, assignee) = match RX_COMMENT.captures(&line) {
+            Some(matches) => (
+                matches["type"].to_string(),
+                matches["details"].to_string(),
+                matches["author"].to_string(),
+            ),
             _ => continue,
         };
 
@@ -62,6 +69,11 @@ where
             line: line_nb as u64 + 1,
             details,
             file: filename.clone(),
+            assignee: if assignee.is_empty() {
+                None
+            } else {
+                Some(assignee)
+            },
         };
 
         let annotation = match &comment_type[..] {
@@ -100,8 +112,12 @@ pub fn parse_string(
     let mut annotations = Vec::new();
 
     for (line_nb, line) in input.lines().enumerate() {
-        let (comment_type, details) = match RX_COMMENT.captures(&line) {
-            Some(matches) => (matches["type"].to_string(), matches["details"].to_string()),
+        let (comment_type, details, assignee) = match RX_COMMENT.captures(&line) {
+            Some(matches) => (
+                matches["type"].to_string(),
+                matches["details"].to_string(),
+                matches["author"].to_string(),
+            ),
             _ => continue,
         };
 
@@ -109,6 +125,11 @@ pub fn parse_string(
             line: offset + line_nb as u64,
             details,
             file: filename.clone(),
+            assignee: if assignee.is_empty() {
+                None
+            } else {
+                Some(assignee)
+            },
         };
 
         let annotation = match &comment_type[..] {
@@ -182,6 +203,7 @@ mod test {
                 line: 1,
                 file: String::from("samples/sample.rs"),
                 details: r"to delete, definitively because it's a non-sense".to_owned(),
+                assignee: Some(String::from("bnjjj")),
             })]
         )
     }
