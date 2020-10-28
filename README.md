@@ -1,10 +1,12 @@
 # FIXME report
 
-Here is a simple tool to automate issues creation directly from `// TODO` and `// FIXME` comments in your code. Too often you write these kinds of comments but are never deleted or even taking in account for next milestone. Note you can also assign your issues to an assignee by indicating a comment with this syntax `// TODO (@bnjjj): clean this function` For now it only support GitHub issue creation but check the [roadmap](#roadmap) for next supports.
+FIXME report is a simple tool to automate your issues creation directly from `// TODO` and `// FIXME` comments in your codebase.
+Too often you write these comments and forget to delete them or take them into account for your project's next milestone. Note that you can also assign your issues to an assignee by writing a comment with the following syntax `// TODO (@bnjjj): clean this function`
+At the current stage FIXME report only supports GitHub issue creation, but take a look at our [roadmap](#roadmap) to know the next platforms supported.
 
 ## Configuration
 
-Save your configuration in a json file like this for example:
+Save your configuration in a JSON file:
 
 ```json
 {
@@ -16,19 +18,19 @@ Save your configuration in a json file like this for example:
 }
 ```
 
-You can save it into a file named `fixme_settings.json` file in the same directory of your usage. If not you can use flag to indicate the path to your configuration file like this `fixme_report -c $HOME/my_settings.json`.
+You can save it into a file named `fixme_settings.json` in the same directory of your project. If you want to have it somewhere else you can use a flag to indicate the path to your configuration file as following `fixme_report -c $HOME/my_settings.json`.
 
 ## Usage
 
-Default behavior is to read a patchset (git diff) directly from stdin. If you want to specify a `.patch` file you can indicate this file with `-f=yourFile.patch` to the CLI.
+The default behavior is to read a patchset (git diff) directly from stdin. If you want to specify a `.patch` file you can do it by adding the following parameter `-f=yourFile.patch` to the CLI.
 
-Example if you want to create issues checking your last commit:
+Example: create issues based on your last commit:
 
 ```bash
 $ git diff HEAD^1 HEAD | fixme_report
 ```
 
-The main idea is to put this CLI in your CI/CD pipeline to launch on every commit merged on master for example.
+The purpose is to add this CLI to your CI/CD pipeline in order to launch it on every commit merged to master.
 
 
 ```bash
@@ -48,7 +50,7 @@ OPTIONS:
     -t, --todo-template <todo-template>      giving template (handlebars) file for todo cases (OPTIONAL)
 ```
 
-Here is an example of created issue with [this example of git diff](samples/sample_with_todo):
+Here is an example of an issue created with [this of git diff](samples/sample_with_todo):
 
 ![example issue](example_issue.png)
 
