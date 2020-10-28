@@ -33,7 +33,7 @@ fn main() {
                 .short("c")
                 .long("config")
                 .takes_value(true)
-                .help("spcecify configuration file, default is fixme_settings.json in the current directory"),
+                .help("specify configuration file, default is fixme_settings.json in the current directory"),
         )
         .arg(
             Arg::with_name("todo-template")
