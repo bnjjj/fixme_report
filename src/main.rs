@@ -14,7 +14,7 @@ use fixme_report::parser;
 fn main() {
     let matches = App::new("fixme_report")
         .version(env!("CARGO_PKG_VERSION"))
-        .about("Command-line to create issue from your codebase with TODO and FIXME annotation")
+        .about("Command-line interface to create issue from your codebase with TODO and FIXME annotations")
         .arg(
             Arg::with_name("dry-run")
                 .short("d")
@@ -26,28 +26,28 @@ fn main() {
                 .short("f")
                 .long("file")
                 .takes_value(true)
-                .help("giving patchset file instead of parsing it via stdin"),
+                .help("specify patchset file instead of parsing it via stdin"),
         )
         .arg(
             Arg::with_name("config-file")
                 .short("c")
                 .long("config")
                 .takes_value(true)
-                .help("giving configuration file, default is fixme_settings.json in the current directory"),
+                .help("specify configuration file, default is fixme_settings.json in the current directory"),
         )
         .arg(
             Arg::with_name("todo-template")
                 .short("t")
                 .long("todo-template")
                 .takes_value(true)
-                .help("giving template (handlebars) file for todo cases (OPTIONAL)"),
+                .help("specify template (handlebars) file for todo cases (OPTIONAL)"),
         )
         .arg(
             Arg::with_name("fixme-template")
                 .short("m")
                 .long("fixme-template")
                 .takes_value(true)
-                .help("giving template (handlebars) file for fixme cases (OPTIONAL)"),
+                .help("specify template (handlebars) file for fixme cases (OPTIONAL)"),
         )
         .get_matches();
 
@@ -79,7 +79,7 @@ fn main() {
     });
 
     let cfg = config::load(matches.value_of("config-file")).unwrap_or_else(|err| {
-        eprintln!("error: cannot parse configuration ({})", err);
+        eprintln!("error: cannot parse configuration file ({})", err);
         std::process::exit(2);
     });
     let issue_tracker_client = issue_tracker::new(cfg);
